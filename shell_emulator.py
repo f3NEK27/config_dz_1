@@ -1,98 +1,111 @@
 import os
+import argparse
+import tarfile
 import json
 import sys
-import tarfile
 
-# Функции для обработки команд
-def handle_ls(current_dir):
-    """Возвращает список файлов в текущей директории."""
-    return os.listdir(current_dir)
+class ShellEmulator:
+    def __init__(self, user, host, fs_path, log_file):
+        self.user = user
+        self.host = host
+        self.fs_path = fs_path
+        self.log_file = log_file
+        self.current_directory = os.getcwd()  # Текущая рабочая директория
 
-def handle_cd(command, current_dir):
-    """Обрабатывает команду 'cd' и возвращает новую директорию."""
-    _, dir_name = command.split()  # предполагается, что команда в формате "cd <dir_name>"
-    new_dir = os.path.join(current_dir, dir_name)
+        # Инициализация файловой системы
+        self.init_filesystem()
 
-    if os.path.isdir(new_dir):
-        return new_dir
-    else:
-        raise FileNotFoundError(f"Директория {new_dir} не найдена.")
+    def init_filesystem(self):
+        # Распаковка файловой системы из tar файла
+        with tarfile.open(self.fs_path) as tar:
+            tar.extractall(path="virtual_fs")  # Распаковываем в папку virtual_fs
+        os.chdir("virtual_fs")  # Переключаем текущую директорию на virtual_fs
+        self.current_directory = os.getcwd()
 
-def handle_du(current_dir):
-    """Возвращает размер всех файлов в текущей директории."""
-    total_size = 0
-    for dirpath, dirnames, filenames in os.walk(current_dir):
-        for f in filenames:
-            fp = os.path.join(dirpath, f)
-            total_size += os.path.getsize(fp)
-    return total_size
+    def log_action(self, command):
+        # Логирование действий
+        action = {
+            'user': self.user,
+            'host': self.host,
+            'command': command
+        }
+        with open(self.log_file, 'a') as f:
+            json.dump(action, f)
+            f.write('\n')
 
-def handle_find(current_dir, filename):
-    """Возвращает список файлов с заданным именем в текущей директории."""
-    found_files = []
-    for dirpath, dirnames, filenames in os.walk(current_dir):
-        if filename in filenames:
-            found_files.append(os.path.join(dirpath, filename))
-    return found_files
+    def handle_ls(self):
+        # Обработка команды ls
+        files = os.listdir(self.current_directory)  # Получаем файлы текущей директории
+        for file in files:
+            if file != 'actions_log.json':  # Пропускаем actions_log.json
+                print(file)  # Выводим каждое имя файла в столбик
 
-def shell_emulator(user, host, fs_archive, log_file):
-    """Основная функция эмулятора командной строки."""
-    if not tarfile.is_tarfile(fs_archive):
-        print("Ошибка: Некорректный формат архива.")
-        sys.exit(1)
+    def handle_cd(self, path):
+        # Обработка команды cd
+        new_path = os.path.join(self.current_directory, path)
+        if os.path.isdir(new_path):
+            os.chdir(new_path)
+            self.current_directory = os.getcwd()
+            return self.current_directory
+        else:
+            return f"cd: {path}: No such file or directory"
 
-    with tarfile.open(fs_archive, 'r') as archive:
-        archive.extractall("/tmp/virtual_fs")
+    def handle_find(self, filename):
+        # Обработка команды find
+        found_files = []
+        for root, dirs, files in os.walk(self.current_directory):
+            if filename in files:
+                found_files.append(os.path.join(root, filename))
+        return found_files
 
-    current_dir = "/tmp/virtual_fs"
-    log_data = []
+    def handle_du(self):
+        # Обработка команды du
+        total_size = 0
+        for dirpath, dirnames, filenames in os.walk(self.current_directory):
+            for f in filenames:
+                fp = os.path.join(dirpath, f)
+                total_size += os.path.getsize(fp)
+        return total_size
 
-    while True:
-        command = input(f"{user}@{host}:{current_dir}$ ")
-        if command == "exit":
-            break
+    def run(self):
+        # Основной цикл
+        while True:
+            command = input(f"{self.user}@{self.host}:{self.current_directory}$ ")
+            self.log_action(command)
 
-        try:
             if command.startswith("ls"):
-                files = handle_ls(current_dir)
-                print("\n".join(files))
-                log_data.append({"command": command, "output": files})
+                self.handle_ls()  # Выводим файлы напрямую
 
             elif command.startswith("cd"):
-                current_dir = handle_cd(command, current_dir)
-                log_data.append({"command": command, "output": current_dir})
-
-            elif command.startswith("du"):
-                size_info = handle_du(current_dir)
-                print(f"Общий размер: {size_info} байт")
-                log_data.append({"command": command, "output": size_info})
+                _, path = command.split(maxsplit=1)
+                result = self.handle_cd(path)
+                if isinstance(result, str):
+                    print(result)
 
             elif command.startswith("find"):
-                _, filename = command.split()
-                found_files = handle_find(current_dir, filename)
-                print("\n".join(found_files))
-                log_data.append({"command": command, "output": found_files})
+                _, filename = command.split(maxsplit=1)
+                found_files = self.handle_find(filename)
+                print(found_files if found_files else f"{filename} not found")
+
+            elif command.startswith("du"):
+                size_info = self.handle_du()
+                print(size_info)
+
+            elif command == "exit":
+                print("Exiting the shell.")
+                break
 
             else:
-                print("Неизвестная команда.")
+                print("Command not found.")
 
-        except Exception as e:
-            print(f"Ошибка: {e}")
-            log_data.append({"command": command, "error": str(e)})
-
-    # Запись логов в файл
-    with open(log_file, 'w') as f:
-        json.dump(log_data, f)
-
-# Код для запуска программы из командной строки
 if __name__ == "__main__":
-    import argparse
-    parser = argparse.ArgumentParser(description="Shell Emulator")
-    parser.add_argument("--user", required=True, help="Имя пользователя")
-    parser.add_argument("--host", required=True, help="Имя хоста")
-    parser.add_argument("--fs", required=True, help="Путь к архиву с файловой системой")
-    parser.add_argument("--log", required=True, help="Путь к лог-файлу")
-    
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--user', required=True, help='Username')
+    parser.add_argument('--host', required=True, help='Host name')
+    parser.add_argument('--fs', required=True, help='File system tar file')
+    parser.add_argument('--log', required=True, help='Log file name')
+
     args = parser.parse_args()
-    
-    shell_emulator(args.user, args.host, args.fs, args.log)
+
+    shell = ShellEmulator(args.user, args.host, args.fs, args.log)
+    shell.run()
