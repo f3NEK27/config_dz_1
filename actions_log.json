@@ -1,0 +1,8 @@
+{"user": "student", "action": "pytest", "success": false}
+{"user": "student", "action": "ls", "success": false}
+{"user": "student", "action": "pwd", "success": false}
+{"user": "student", "action": "ls", "success": false}
+{"user": "student", "action": "python shell_emulator.py --user student --host localhost --fs virtual_fs.tar --log actions_log.json", "success": false}
+{"user": "student", "action": "pwd", "success": false}
+{"user": "student", "action": "ls", "success": false}
+{"user": "student", "action": "ls", "success": false}
