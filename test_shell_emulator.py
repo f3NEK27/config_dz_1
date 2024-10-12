@@ -1,5 +1,5 @@
 import pytest
-from shell_emulator import handle_ls, handle_cd, handle_du, handle_find
+from shell_emulator import handle_ls, handle_cd, handle_du, handle_find, handle_who
 
 def test_handle_ls(tmpdir):
     test_dir = tmpdir.mkdir("test")
@@ -40,3 +40,10 @@ def test_handle_find_not_found(tmpdir):
 
     found_files = handle_find(str(test_dir), "non_existent_file.txt")
     assert len(found_files) == 0
+
+def test_handle_who():
+    user = "test_user"
+    host = "test_host"
+    expected_output = f"{user}@{host}"
+    
+    assert handle_who(user, host) == expected_output
