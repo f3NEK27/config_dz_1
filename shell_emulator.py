@@ -35,6 +35,10 @@ def handle_find(current_dir, filename):
             found_files.append(os.path.join(dirpath, filename))
     return found_files
 
+def handle_who(user, host):
+    """Возвращает информацию о пользователе и хосте."""
+    return f"{user}@{host}"
+
 def shell_emulator(user, host, fs_archive, log_file):
     """Основная функция эмулятора командной строки."""
     if not tarfile.is_tarfile(fs_archive):
@@ -72,6 +76,11 @@ def shell_emulator(user, host, fs_archive, log_file):
                 found_files = handle_find(current_dir, filename)
                 print("\n".join(found_files))
                 log_data.append({"command": command, "output": found_files})
+
+            elif command.startswith("who"):
+                who_info = handle_who(user, host)
+                print(who_info)
+                log_data.append({"command": command, "output": who_info})
 
             else:
                 print("Неизвестная команда.")
