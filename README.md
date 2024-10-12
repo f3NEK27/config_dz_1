@@ -64,3 +64,13 @@ tar. Эмулятор должен работать в режиме CLI.
 
 ![image](https://github.com/user-attachments/assets/a0a4ea55-627d-4bfd-83a5-87ae691a2bd7)
 
+```cd```: 
+
+![image](https://github.com/user-attachments/assets/06adfec9-23eb-4bfb-999b-257ee0cfbbbf)
+
+```who```: 
+
+![image](https://github.com/user-attachments/assets/943e1d2c-43a2-4144-9d31-8f33ad7d3767)
+
+
+
