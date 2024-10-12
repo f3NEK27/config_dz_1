@@ -1,8 +1,1 @@
-{"user": "student", "action": "pytest", "success": false}
-{"user": "student", "action": "ls", "success": false}
-{"user": "student", "action": "pwd", "success": false}
-{"user": "student", "action": "ls", "success": false}
-{"user": "student", "action": "python shell_emulator.py --user student --host localhost --fs virtual_fs.tar --log actions_log.json", "success": false}
-{"user": "student", "action": "pwd", "success": false}
-{"user": "student", "action": "ls", "success": false}
-{"user": "student", "action": "ls", "success": false}
+[{"command": "ls", "output": ["bin", "home", "usr"]}, {"command": "cd home", "output": "/tmp/virtual_fs\\home"}, {"command": "ls", "output": ["documents", "downloads", "guest", "passwords", "pictures", "user.txt"]}, {"command": "cd pictures", "output": "/tmp/virtual_fs\\home\\pictures"}, {"command": "ls", "output": ["picture1.png", "picture2.png", "plkfsj.png", "Q0 11 rabota.png", "Q1 11 rabota.png", "Q2 11 rabota.png", "Q3 11 rabota.png", "screenshot.png"]}, {"command": "du", "output": 338094}, {"command": "cd ..", "output": "/tmp/virtual_fs\\home\\pictures\\.."}, {"command": "cd ..", "output": "/tmp/virtual_fs\\home\\pictures\\..\\.."}, {"command": "ls", "output": ["bin", "home", "usr"]}, {"command": "who", "output": "student@localhost"}, {"command": "find picture1.png", "output": ["/tmp/virtual_fs\\home\\pictures\\..\\..\\home\\pictures\\picture1.png"]}]
